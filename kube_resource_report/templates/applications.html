@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Applications{% endblock %}
+{% block content %}
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>ID</th>
+                  <th>Team</th>
+                  <th><abbr title="Active?">A?</abbr></th>
+                  <th><abbr title="Clusters">C</abbr></th>
+                  <th><abbr title="Pods">P</abbr></th>
+                  <th><abbr title="CPU Requests">CR</abbr></th>
+                  <th><abbr title="Memory Requests">MR</abbr></th>
+                  <th>CPU</th>
+                  <th>Memory (MiB)</th>
+                  <th class="has-text-right">Cost</th>
+                  <th class="has-text-right">Slack Cost</th>
+                  {% if links['application']: %}
+                  <th></th>
+                  {% endif %}
+              </tr>
+          </thead>
+          <tbody>
+          {% for application_id, app in applications.items()|sort: %}
+          <tr>
+            <td>{{ application_id }}</td>
+            <td><a href="team-{{ app.team }}.html">{{ app.team }}</a></td>
+            <td>
+                {% if app.active is not none: %}
+                {% if app.active: %}
+                <span class="icon"><i class="fas fa-check-square has-text-success"></i></span>
+
+                {% else: %}
+                <span class="icon"><i class="fas fa-exclamation-triangle has-text-warning"></i></span>
+                {% endif %}
+                {% endif %}
+
+                </td>
+            <td>{{ app.clusters|count }}</td>
+            <td>{{ app.pods }}</td>
+            <td>{{ app.requests.cpu|round(3) }}</td>
+            <td data-value="{{ app.requests.memory }}">{{ app.requests.memory|filesizeformat(True) }}</td>
+
+            <td style="font-size: 0.75rem" data-value="{{ app.usage.cpu }}">
+                <div class="resource-labels">
+                    <span>{{ app.usage.cpu|round(2) }}</span> <span>{{ app.requests.cpu|round(2) }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ app.requests.cpu }}" max="{{ app.requests.cpu }}"></progress>
+                    <progress class="progress {{ 'is-danger' if app.usage.cpu > app.requests.cpu else 'is-primary' }}" value="{{ app.usage.cpu }}" max="{{ app.requests.cpu }}"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="{{ app.usage.memory }}">
+                <div class="resource-labels">
+                    <span>{{ app.usage.memory|memory('MiB') }}</span> <span>{{ app.requests.memory|memory('MiB') }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ app.requests.memory }}" max="{{ app.requests.memory }}"></progress>
+                    <progress class="progress {{ 'is-danger' if app.usage.memory > app.requests.memory else 'is-primary' }}" value="{{ app.usage.memory }}" max="{{ app.requests.memory }}"></progress>
+                </div>
+            </td>
+
+            <td class="has-text-right">{{ app.cost|money }}</td>
+            <td class="has-text-right">{{ app.slack_cost|money }}</td>
+
+            {% if links['application']: %}
+            <td class="links">
+                <div class="buttons has-addons">
+                {% for link in links['application']: %}
+                    <a href="{{ link.href.format(**app) }}"
+                        title="{{ link.title.format(**app) }}"
+                        class="button is-small">
+                        <span class="icon"><i class="fas fa-{{ link.icon }}"></i></span>
+                    </a>
+                {% endfor %}
+                </div>
+            </td>
+            {% endif %}
+          </tr>
+
+          {%endfor %}
+          </tbody>
+
+        </table>
+{% endblock %}

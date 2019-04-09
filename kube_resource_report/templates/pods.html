@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Pods{% endblock %}
+{% block content %}
+
+      <table class="table is-striped" data-sortable>
+          <thead>
+              <tr>
+                  <th>Cluster</th>
+                  <th>Namespace</th>
+                  <th>Name</th>
+                  <th>Application</th>
+                  <th><abbr title="CPU Requests">CR</abbr></th>
+                  <th><abbr title="Memory Requests">MR</abbr></th>
+                  <th>CPU</th>
+                  <th>Memory (MiB)</th>
+                  <th class="has-text-right">Cost</th>
+              </tr>
+          </thead>
+          <tbody>
+          {% for cluster_id, summary in cluster_summaries.items(): %}
+          {% for namespace_name, pod in summary.pods.items(): %}
+          <tr>
+            <td><a href="./cluster-{{ cluster_id }}.html">{{ summary.cluster.name }}</a></td>
+            <td>{{ namespace_name[0] }}</td>
+            <td>{{ namespace_name[1] }}</td>
+            <td>{{ pod.application }}</td>
+            <td>{{ pod.requests.cpu|round(3) }}</td>
+            <td data-value="{{ pod.requests.memory }}">{{ pod.requests.memory|filesizeformat(True) }}</td>
+
+            <td style="font-size: 0.75rem" data-value="{{ pod.usage.cpu }}">
+                <div class="resource-labels">
+                    <span>{{ pod.usage.cpu|round(2) }}</span> <span>{{ pod.requests.cpu|round(2) }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ pod.requests.cpu }}" max="{{ pod.requests.cpu }}"></progress>
+                    <progress class="progress {{ 'is-danger' if pod.usage.cpu > pod.requests.cpu else 'is-primary' }}" value="{{ pod.usage.cpu }}" max="{{ pod.requests.cpu }}"></progress>
+                </div>
+            </td>
+            <td style="font-size: 0.75rem" data-value="{{ pod.usage.memory }}">
+                <div class="resource-labels">
+                    <span>{{ pod.usage.memory|memory('MiB') }}</span> <span>{{ pod.requests.memory|memory('MiB') }}</span>
+                </div>
+                <div class="resource-bar">
+                    <progress class="progress" value="{{ pod.requests.memory }}" max="{{ pod.requests.memory }}"></progress>
+                    <progress class="progress {{ 'is-danger' if pod.usage.memory > pod.requests.memory else 'is-primary' }}" value="{{ pod.usage.memory }}" max="{{ pod.requests.memory }}"></progress>
+                </div>
+            </td>
+
+            <td class="has-text-right">{{ pod.cost|money }}</td>
+          </tr>
+          {%endfor %}
+          {%endfor %}
+          </tbody>
+
+        </table>
+{% endblock %}
