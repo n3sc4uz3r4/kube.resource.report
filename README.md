@@ -1,6 +1,4 @@
-==========================
-Kubernetes Resource Report
-==========================
+# Kubernetes Resource Report
 
 .. image:: https://travis-ci.org/hjacobs/kube-resource-report.svg?branch=master
    :target: https://travis-ci.org/hjacobs/kube-resource-report
